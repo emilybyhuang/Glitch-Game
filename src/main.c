@@ -69,10 +69,7 @@ void randomBars(){
             if(occupiedRow[i])clearHorizontalWall(occupiedRow[i]);
         }
     }
-    counter++;
-    //clear previously drawn bar
-    //draw_background();
-    
+    counter++;    
     wallUpDown(wall[0], middleOpening[0], wallColour[0]);
     wall[0] += 1; 
     wallUpDown(wall[2], middleOpening[2], wallColour[2]);
@@ -81,6 +78,12 @@ void randomBars(){
     wall[1] += 1;
     wallLeftRight(wall[3], middleOpening[3], wallColour[3]);
 	wall[3] -= 1;
+
+    //if going to be out of bounds, reset
+    for(int i = 0; i < 4; i++){
+        if(wall[i] == 10)wall[i] = 0;
+        if(wall[i] == -1)wall[i] = 9;
+    }
 }
 
 void clear_screen(){
