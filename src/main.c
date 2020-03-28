@@ -8,15 +8,13 @@ volatile int pixel_buffer_start = 0xC8000000; // global variable
 short int colour[4] = {0xF800, 0x07E0, 0x001F, 0xAAAA};
 //direction: 0:left 1:top 2:right 3:bottom 
 short int backgroundColour = 0x0000;
-int wall[8] = {-1, -1, -1, -1, -1, -1, -1, -1};//-1 if not taken
+int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
-void wallFromLeft(int colToColour,int middleOpening, short int wallColour);
-void wallFromTop(int rowToColour,int middleOpening, short int wallColour);
-void wallFromRight(int colToColour,int middleOpening, short int wallColour);
-void wallFromBottom(int rowToColour,int middleOpening, short int wallColour);
+void wallLeftRight(int colToColour,int middleOpening, short int wallColour);
+void wallUpDown(int rowToColour,int middleOpening, short int wallColour);
 void clear_screen();
 void wait_for_vsync();
 void plot_pixel(int x, int y, short int line_color);
@@ -61,22 +59,15 @@ void randomBars(){
     //generate a bar with a random opening, random colour, coming from a random direction
     
     //find unoccupied wall element: take 1st one for now
-    wallFromTop(wall[0], middleOpening[0], wallColour[0]);
-    // switch(dir){
-    //     case 0:
-    //         wallFromLeft(middleOpening, wallColour);
-    //         break;
-    //     case 1:
-    //         wallFromTop(middleOpening, wallColour);
-    //         break;
-    //     case 2:
-    //         wallFromRight(middleOpening, wallColour);
-    //         break;
-    //     case 3:
-    //         wallFromBottom(middleOpening, wallColour);
-    //         break; 
-    // }
-    wall[0] += 1;
+    //wallFromTop(wall[0], middleOpening[0], wallColour[0]);
+    //wallFromLeft(wall[1], middleOpening[1], wallColour[1]);
+    //wall[0] += 1;
+    //wall[1] += 1;
+	
+	wallLeftRight(wall[2], middleOpening[2], wallColour[2]);
+	wall[2] -= 1;
+    //wallLeftRight(wall[1], middleOpening[1], wallColour[1]);
+    //wall[1] += 1;
 }
 
 void clear_screen(){
@@ -111,8 +102,8 @@ void draw_grid(int a, int b, short int gridColour){
     int yMax = ((b+1)*sideLength)-1;
     int x, y;
     
-    for(y = yMin; y < yMax; y++){
-        for(x = xMin; x < xMax; x++){
+	for(x = xMin; x < xMax; x++){
+    	for(y = yMin; y < yMax; y++){
             if(x % 24 == 0 || x % 24 == 23 || y % 24 == 0 || y % 24 == 23){
                 //draw black
                 plot_pixel(x, y, 0x0000);
@@ -132,38 +123,29 @@ void draw_background(){
     }
 }
 
-
-void wallFromTop(int rowToColour, int middleOpening, short int wallColour){
+//col, row because uses x, y 
+void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
     //opening is from middleOpening - 1 to middleOpening + 1
-    //while(1){
     for(int row = 0; row < 10; row ++){
-        for(int col = 0; col < 10; col++){
-            if(col == rowToColour){
+		for(int col = 0; col < 10; col++){
+            if(col == colToColour){
                 if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
-                    draw_grid(row, col, wallColour);
+                    draw_grid(col, row, wallColour);
                 }
-            }else draw_grid(row, col, 0xFFFF);//fill the rest in with white
+            }else draw_grid(col, row, 0xFFFF);//fill the rest in with white
         }   
     }
-        //wait_for_vsync();
-        //colouredCol++;
-    //}
 }
 
-void wallFromLeft(int rowToColour,int middleOpening, short int wallColour){
+void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
     //opening is from middleOpening - 1 to middleOpening + 1
-   
-    
-}
-
-void wallFromRight(int colToColour,int middleOpening, short int wallColour){
-    //opening is from middleOpening - 1 to middleOpening + 1
-    
-    
-}
-
-void wallFromBottom(int rowToColour,int middleOpening, short int wallColour){
-    //opening is from middleOpening - 1 to middleOpening + 1
-    
-    
+    for(int row = 0; row < 10; row ++){
+        for(int col = 0; col < 10; col++){
+            if(row == rowToColour){
+                if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
+                    draw_grid(col, row, wallColour);
+                }
+            }else draw_grid(col, row, 0xFFFF);//fill the rest in with white
+        }   
+    }
 }
