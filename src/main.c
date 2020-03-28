@@ -60,15 +60,14 @@ void randomBars(){
     //generate a bar with a random opening, random colour, coming from a random direction
     
     //find unoccupied wall element: take 1st one for now
-    //wallFromTop(wall[0], middleOpening[0], wallColour[0]);
-    //wallFromLeft(wall[1], middleOpening[1], wallColour[1]);
-    //wall[0] += 1;
-    //wall[1] += 1;
-	
-	wallLeftRight(wall[2], middleOpening[2], wallColour[2]);
-	wall[2] -= 1;
-    //wallLeftRight(wall[1], middleOpening[1], wallColour[1]);
-    //wall[1] += 1;
+    wallUpDown(wall[0], middleOpening[0], wallColour[0]);
+    wall[0] += 1; 
+    wallUpDown(wall[2], middleOpening[2], wallColour[2]);
+    wall[2] -= 1;
+    wallLeftRight(wall[1], middleOpening[1], wallColour[1]);
+    wall[1] += 1;
+    wallLeftRight(wall[3], middleOpening[3], wallColour[3]);
+	wall[3] -= 1;
 }
 
 void clear_screen(){
@@ -133,7 +132,7 @@ void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
                 if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
                     draw_grid(col, row, wallColour);
                 }
-            }else draw_grid(col, row, 0xFFFF);//fill the rest in with white
+            }//else draw_grid(col, row, 0xFFFF);//fill the rest in with white
         }   
     }
 }
@@ -146,7 +145,7 @@ void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
                 if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
                     draw_grid(col, row, wallColour);
                 }
-            }else draw_grid(col, row, 0xFFFF);//fill the rest in with white
+            }//else draw_grid(col, row, 0xFFFF);//fill the rest in with white
         }   
     }
 }
