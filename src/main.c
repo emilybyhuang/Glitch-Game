@@ -40,7 +40,8 @@ int main(void){
     /* set back pixel buffer to start of SDRAM memory */
     *(pixel_ctrl_ptr + 1) = 0xC0000000;
     pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
-
+	clear_screen();
+	draw_background();
     for(int i = 0; i < 8; i++){
         middleOpening[i] = rand()%8+1;
         wallColour[i] = colour[rand()%6];
