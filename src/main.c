@@ -2,16 +2,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-int grid[10][10];
+short int grid[10][10];//each time it draws, make grid occupied by the colour value
 int sideLength = 24;
 volatile int pixel_buffer_start = 0xC8000000; // global variable
-short int colour[4] = {0xF800, 0x07E0, 0x001F, 0xAAAA};
-//direction: 0:left 1:top 2:right 3:bottom 
+                      //red   yellow   green    cyan    blue   magenta
+short int colour[6] = {0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F};
 short int backgroundColour = 0x0000;
 int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+int counter = 0;
 
 void wallLeftRight(int colToColour,int middleOpening, short int wallColour);
 void wallUpDown(int rowToColour,int middleOpening, short int wallColour);
@@ -42,7 +43,7 @@ int main(void){
 
     for(int i = 0; i < 8; i++){
         middleOpening[i] = rand()%8+1;
-        wallColour[i] = colour[rand()%3];
+        wallColour[i] = colour[rand()%6];
         dir[i] = rand()%4;
     }
 
@@ -55,6 +56,7 @@ int main(void){
 }
 
 void randomBars(){
+    counter++;
     clear_screen();
     draw_background();
     //generate a bar with a random opening, random colour, coming from a random direction
@@ -95,6 +97,7 @@ void plot_pixel(int x, int y, short int line_color)
 }
 
 void draw_grid(int a, int b, short int gridColour){
+    grid[a][b] = gridColour;
     //i, j is which index of grid to draw
     int xMin = a*sideLength;
     int yMin = b*sideLength;
