@@ -57,7 +57,7 @@ int main(void){
 }
 
 void randomBars(){
-    //clear_screen();
+    clear_screen();
     draw_background();
     //generate a bar with a random opening, random colour, coming from a random direction
     
