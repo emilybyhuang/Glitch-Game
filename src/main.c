@@ -131,25 +131,17 @@ void draw_background(){
 void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
     //opening is from middleOpening - 1 to middleOpening + 1
     for(int row = 0; row < 10; row ++){
-		for(int col = 0; col < 10; col++){
-            if(col == colToColour){
-                if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
-                    draw_grid(col, row, wallColour);
-                }
-            }//else draw_grid(col, row, 0xFFFF);//fill the rest in with white
-        }   
+        if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
+            draw_grid(colToColour, row, wallColour);
+        }
     }
 }
 
 void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
     //opening is from middleOpening - 1 to middleOpening + 1
-    for(int row = 0; row < 10; row ++){
-        for(int col = 0; col < 10; col++){
-            if(row == rowToColour){
-                if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
-                    draw_grid(col, row, wallColour);
-                }
-            }//else draw_grid(col, row, 0xFFFF);//fill the rest in with white
-        }   
-    }
+    for(int col = 0; col < 10; col++){
+        if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
+                draw_grid(col, rowToColour, wallColour);
+        }
+    }   
 }
