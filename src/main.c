@@ -20,6 +20,7 @@ int occupiedCol[10];
 int occupiedRow[10];
 int topWall = 0;
 int bottomWall = 9;
+int random_eight = 0;
 
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
@@ -30,7 +31,7 @@ void wait_for_vsync();
 void plot_pixel(int x, int y, short int line_color);
 void draw_grid(int a, int b, short int gridColour);
 void draw_background();
-void randomBars(int direction, int randomNum);
+void randomBars(int direction, int opening, int colour_wall);
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -56,18 +57,15 @@ int main(void){
         wallColour[i] = colour[rand()%6];
         dir[i] = rand()%4;
     }
-	
-	int random_dir = rand() % 8;
-	direction = dir[random_dir];
-	
-	int random_eight = rand() % 8;
+	random_eight = rand() % 8;
+	direction = dir[random_eight];
 	opening = middleOpening[random_eight];
 	colour_wall = wallColour[random_eight];
 
-    while (1){   
-      
+    while (1){   	
+		
 		clear_screen();
-		draw_background();		
+		draw_background();
 		
 		if(direction == 0) { // From top
 			wallUpDown(topWall, opening, colour_wall);
@@ -85,16 +83,14 @@ int main(void){
 		
 		if(topWall == 10) {
 			topWall = 0;
-			random_dir = rand() % 8;
-			direction = dir[random_dir];
 			random_eight = rand() % 8;
+			direction = dir[random_eight];
 			opening = middleOpening[random_eight];
 			colour_wall = wallColour[random_eight];
 		} else if(bottomWall == -1) {
 			bottomWall = 9;
-			random_dir = rand() % 8;
-			direction = dir[random_dir];
 			random_eight = rand() % 8;
+			direction = dir[random_eight];
 			opening = middleOpening[random_eight];
 			colour_wall = wallColour[random_eight];
 		}
@@ -104,7 +100,7 @@ int main(void){
     }
 }
 
-void randomBars(int direction, int randomNum){
+void randomBars(int direction, int opening, int colour_wall){
     //if(counter!=0){
       //  for(int i = 0; i < 10; i++){
         //    if(occupiedCol[i])clearVerticalWall(occupiedCol[i]);
@@ -114,23 +110,7 @@ void randomBars(int direction, int randomNum){
         //}
     //}
     //counter++;    
-	clear_screen();
-	draw_background();
 	
-	if(direction == 0) { // From top
-		wallUpDown(topWall, middleOpening[randomNum], wallColour[randomNum]);
-		topWall += 1;
-	} else if(direction == 1) { // From bottom
-		wallUpDown(bottomWall, middleOpening[randomNum], wallColour[randomNum]);
-		bottomWall -= 1;
-	} else if(direction == 2) { // From left
-		wallLeftRight(topWall, middleOpening[randomNum], wallColour[randomNum]);
-		topWall += 1;
-	} else if(direction == 3) { // From right
-		wallLeftRight(bottomWall, middleOpening[randomNum], wallColour[randomNum]);
-		bottomWall -= 1;
-	}
-
 }
 
 void clear_screen(){
