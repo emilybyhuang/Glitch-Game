@@ -20,6 +20,8 @@ int occupiedCol[10];
 int occupiedRow[10];
 int topWall = 0;
 int bottomWall = 9;
+int start_position = 4;
+int end_position = 4;
 //int random_eight = 0;
 
 void clearVerticalWall(int col);
@@ -36,6 +38,8 @@ void randomBars();
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
+    volatile int * sw_ptr = (int *)0xFF200040;
+    int sw_value;
     // declare other variables(not shown)
     // initialize location and direction of rectangles(not shown)
 
@@ -71,6 +75,26 @@ int main(void){
 	    //colour_wall = wallColour[random_eight];  
 		clear_screen();
 		draw_background();
+	    	draw_grid(start_position, end_position, 0xF800);
+		sw_value = *sw_ptr;
+		// value == 1 is up; value == 2 is down; value == 3 is right; value == 4 is left;
+		if(sw_value == 1) {
+			draw_grid(start_position, end_position, 0xFFFF);
+			end_position += 1;
+			draw_grid(start_position, end_position, 0xF800);
+		} else if(sw_value == 2) {
+			draw_grid(start_position, end_position, 0xFFFF);
+			end_position -= 1;
+			draw_grid(start_position, end_position, 0xF800);
+		} else if(sw_value == 3) {
+			draw_grid(start_position, end_position, 0xFFFF);
+			start_position += 1;
+			draw_grid(start_position, end_position, 0xF800);
+		} else if(sw_value == 4) {
+			draw_grid(start_position, end_position, 0xFFFF);
+			start_position -= 1;
+			draw_grid(start_position, end_position, 0xF800);
+		}
 		randomBars();
 		
 
