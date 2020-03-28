@@ -20,6 +20,7 @@ void wait_for_vsync();
 void plot_pixel(int x, int y, short int line_color);
 void draw_grid(int a, int b, short int gridColour);
 void draw_background();
+void randomBars();
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
