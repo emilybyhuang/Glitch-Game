@@ -20,7 +20,7 @@ int occupiedCol[10];
 int occupiedRow[10];
 int topWall = 0;
 int bottomWall = 9;
-int random_eight = 0;
+//int random_eight = 0;
 
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
@@ -31,7 +31,8 @@ void wait_for_vsync();
 void plot_pixel(int x, int y, short int line_color);
 void draw_grid(int a, int b, short int gridColour);
 void draw_background();
-void randomBars(int direction, int opening, int colour_wall);
+//void randomBars(int direction, int opening, int colour_wall);
+void randomBars();
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -57,50 +58,29 @@ int main(void){
         wallColour[i] = colour[rand()%6];
         dir[i] = rand()%4;
     }
-	random_eight = rand() % 8;
-	direction = dir[random_eight];
-	opening = middleOpening[random_eight];
-	colour_wall = wallColour[random_eight];
+
+    //for 1 wall at a time
+    direction = dir[rand() % 8];
+    opening = middleOpening[rand() % 8];
+    colour_wall = wallColour[rand() % 8];  
 
     while (1){   	
-		
+		//random_eight = rand() % 8;
+	    //direction = dir[random_eight];
+	    //opening = middleOpening[random_eight];
+	    //colour_wall = wallColour[random_eight];  
 		clear_screen();
 		draw_background();
+		randomBars();
 		
-		if(direction == 0) { // From top
-			wallUpDown(topWall, opening, colour_wall);
-			topWall += 1;
-		} else if(direction == 1) { // From bottom
-			wallUpDown(bottomWall, opening, colour_wall);
-			bottomWall -= 1;
-		} else if(direction == 2) { // From left
-			wallLeftRight(topWall, opening, colour_wall);
-			topWall += 1;
-		} else if(direction == 3) { // From right
-			wallLeftRight(bottomWall, opening, colour_wall);
-			bottomWall -= 1;
-		}
-		
-		if(topWall == 10) {
-			topWall = 0;
-			random_eight = rand() % 8;
-			direction = dir[random_eight];
-			opening = middleOpening[random_eight];
-			colour_wall = wallColour[random_eight];
-		} else if(bottomWall == -1) {
-			bottomWall = 9;
-			random_eight = rand() % 8;
-			direction = dir[random_eight];
-			opening = middleOpening[random_eight];
-			colour_wall = wallColour[random_eight];
-		}
 
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
 }
 
-void randomBars(int direction, int opening, int colour_wall){
+void randomBars(){
+//void randomBars(int direction, int opening, int colour_wall){
     //if(counter!=0){
       //  for(int i = 0; i < 10; i++){
         //    if(occupiedCol[i])clearVerticalWall(occupiedCol[i]);
@@ -109,8 +89,33 @@ void randomBars(int direction, int opening, int colour_wall){
           //  if(occupiedRow[i])clearHorizontalWall(occupiedRow[i]);
         //}
     //}
-    //counter++;    
-	
+    //counter++;  
+
+    if(direction == 0) { // From top
+        wallUpDown(topWall, opening, colour_wall);
+        topWall += 1;
+    } else if(direction == 1) { // From bottom
+        wallUpDown(bottomWall, opening, colour_wall);
+        bottomWall -= 1;
+    } else if(direction == 2) { // From left
+        wallLeftRight(topWall, opening, colour_wall);
+        topWall += 1;
+    } else if(direction == 3) { // From right
+        wallLeftRight(bottomWall, opening, colour_wall);
+        bottomWall -= 1;
+    }
+    
+    if(topWall == 10) {
+        topWall = 0;
+        direction = dir[rand() % 8];
+        opening = middleOpening[rand() % 8];
+        colour_wall = wallColour[rand() % 8];
+    } else if(bottomWall == -1) {
+        bottomWall = 9;
+        direction = dir[rand() % 8];
+        opening = middleOpening[rand() % 8];
+        colour_wall = wallColour[rand() % 8];
+    }
 }
 
 void clear_screen(){
