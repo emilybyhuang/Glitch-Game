@@ -14,14 +14,14 @@ int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 short int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int direction = 0;
 int opening = 0;
+bool movePlayerSignal = false; // =true if to move
+int prevPlayerX, prevPlayerY;
+int keyValue;
+
 short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
 short int occupiedCol[10] = {0xFFFF};
 short int occupiedRow[10] = {0xFFFF};
-int topWall = 0;
-int bottomWall = 9;
-int counter = 0;
-int start_position = 4;
-int end_position = 4;
+int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue;
 //int random_eight = 0;
 
 void clearVerticalWall(int col);
@@ -36,12 +36,14 @@ void draw_background();
 //void randomBars(int direction, int opening, int colour_wall);
 void randomBars();
 void speed_adjust(int startValue);
-void polledKey();
+void movePlayerDown();
+void movePlayerUp();
+void movePlayerLeft();
+void movePlayerRight();
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-    volatile int * key_ptr = (int *)0xFF200050;
-    int key_value;
+    
     // declare other variables(not shown)
     // initialize location and direction of rectangles(not shown)
 
@@ -75,49 +77,67 @@ int main(void){
 	    //direction = dir[random_eight];
 	    //opening = middleOpening[random_eight];
 	    //colour_wall = wallColour[random_eight];  
-        speed_adjust(500000);
-	    draw_grid(start_position, end_position, playerColour);
-		key_value = *key_ptr;
-		// value == 1 is up; value == 2 is down; value == 3 is right; value == 4 is left;
-		if(key_value == 1) {
-            polledKey();
-			draw_grid(start_position, end_position, white);
-			end_position += 1;
-			if(end_position == 10) {
-				end_position = 9;
-			}
-			draw_grid(start_position, end_position, playerColour);
-		} else if(key_value == 2) {
-            polledKey();
-			draw_grid(start_position, end_position, white);
-			end_position -= 1;
-			if(end_position == -1) {
-				end_position = 0;
-			}
-			draw_grid(start_position, end_position, playerColour);
-		} else if(key_value == 4) {
-            polledKey();
-			draw_grid(start_position, end_position, white);
-			start_position += 1;
-			if(start_position == 10) {
-				start_position = 9;
-			}
-			draw_grid(start_position, end_position, playerColour);
-		} else if(key_value == 8) {
-            polledKey();
-			draw_grid(start_position, end_position, white);
-			start_position -= 1;
-			if(start_position == -1) {
-				start_position = 0;
-			}
-			draw_grid(start_position, end_position, playerColour);
-		}
+        speed_adjust(5000);
+	    volatile int *key_ptr = (int *)0xFF200050;
+    	int key_value = *key_ptr;
+		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
+		
+        if(movePlayerSignal == true && key_value == 0){
+            draw_grid(prevPlayerX, prevPlayerY, white);
+            draw_grid(playerX, playerY, playerColour);
+            movePlayerSignal = false;
+        }else draw_grid(playerX, playerY, playerColour);
+        if(!movePlayerSignal){
+            keyValue = *key_ptr;
+            if(key_value == 1) {
+                movePlayerRight();
+            } else if(key_value == 2) {
+                movePlayerDown();
+            } else if(key_value == 4) {
+                movePlayerUp();
+            } else if(key_value == 8) {
+                movePlayerLeft();
+            }
+        }
+        
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
 }
 
 
+
+void movePlayerDown(){
+        prevPlayerX = playerX;
+        prevPlayerY = playerY;
+        movePlayerSignal = true;
+        playerY += 1;
+        if(playerY == 10) playerY = 9;
+}
+
+void movePlayerUp(){
+        prevPlayerX = playerX;
+        prevPlayerY = playerY;
+        movePlayerSignal = true;
+        playerY -= 1;
+        if(playerY == -1) playerY = 0;
+}
+
+void movePlayerRight(){
+        prevPlayerX = playerX;
+        prevPlayerY = playerY;
+        movePlayerSignal = true;
+        playerX += 1;
+        if(playerX == 10) playerX = 9;
+}
+
+void movePlayerLeft(){
+        prevPlayerX = playerX;
+        prevPlayerY = playerY;
+        movePlayerSignal = true;
+        playerX -= 1;
+        if(playerX == -1) playerX = 0;
+}
 
 void speed_adjust(int startValue){
     int count = startValue;
@@ -180,15 +200,6 @@ void wait_for_vsync(){
     while((status & 0x1)!=0){//check is S = 1?
         status = *(pixel_ctrl_ptr + 3);//if S = 1, update status variable and keep checking
     }//exit while loop when S = 0(which is when DMA controller finsihed transfering pixels)
-}
-
-
-void polledKey(){
-    volatile int * key_ptr = (int *)0xFF200050;
-    int key_value = *key_ptr;
-    while(key_value !=0){
-        key_value = *key_ptr;
-    }
 }
 
 void plot_pixel(int x, int y, short int line_color)
