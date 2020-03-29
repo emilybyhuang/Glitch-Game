@@ -1,3 +1,4 @@
+  
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -39,8 +40,8 @@ void speed_adjust(int startValue);
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-    volatile int * sw_ptr = (int *)0xFF200040;
-    int sw_value;
+    volatile int * key_ptr = (int *)0xFF200050;
+    int key_value;
     // declare other variables(not shown)
     // initialize location and direction of rectangles(not shown)
 
@@ -76,23 +77,35 @@ int main(void){
 	    //colour_wall = wallColour[random_eight];  
         speed_adjust(500000);
 	    draw_grid(start_position, end_position, 0xF800);
-		sw_value = *sw_ptr;
+		key_value = *key_ptr;
 		// value == 1 is up; value == 2 is down; value == 3 is right; value == 4 is left;
-		if(sw_value == 1) {
+		if(key_value == 1) {
 			draw_grid(start_position, end_position, 0xFFFF);
 			end_position += 1;
+			if(end_position == 10) {
+				end_position = 9;
+			}
 			draw_grid(start_position, end_position, 0xF800);
-		} else if(sw_value == 2) {
+		} else if(key_value == 2) {
 			draw_grid(start_position, end_position, 0xFFFF);
 			end_position -= 1;
+			if(end_position == -1) {
+				end_position = 0;
+			}
 			draw_grid(start_position, end_position, 0xF800);
-		} else if(sw_value == 3) {
+		} else if(key_value == 4) {
 			draw_grid(start_position, end_position, 0xFFFF);
 			start_position += 1;
+			if(start_position == 10) {
+				start_position = 9;
+			}
 			draw_grid(start_position, end_position, 0xF800);
-		} else if(sw_value == 4) {
+		} else if(key_value == 8) {
 			draw_grid(start_position, end_position, 0xFFFF);
 			start_position -= 1;
+			if(start_position == -1) {
+				start_position = 0;
+			}
 			draw_grid(start_position, end_position, 0xF800);
 		}
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
@@ -233,3 +246,4 @@ void clearHorizontalWall(int row){
         draw_grid(i, row, 0xFFFF);
     }
 }
+
