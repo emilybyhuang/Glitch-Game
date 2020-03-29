@@ -11,15 +11,15 @@ short int backgroundColour = 0x0000;
 int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
-int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+short int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int direction = 0;
 int opening = 0;
-int colour_wall = 0;
-int counter = 0;
-int occupiedCol[10];
-int occupiedRow[10];
+short int colourWall = 0;
+short int occupiedCol[10] = {0xFFFF};
+short int occupiedRow[10] = {0xFFFF};
 int topWall = 0;
 int bottomWall = 9;
+int counter = 0;
 //int random_eight = 0;
 
 void clearVerticalWall(int col);
@@ -33,6 +33,7 @@ void draw_grid(int a, int b, short int gridColour);
 void draw_background();
 //void randomBars(int direction, int opening, int colour_wall);
 void randomBars();
+void speed_adjust(int startValue);
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -62,46 +63,50 @@ int main(void){
     //for 1 wall at a time
     direction = dir[rand() % 8];
     opening = middleOpening[rand() % 8];
-    colour_wall = wallColour[rand() % 8];  
+    colourWall = wallColour[rand() % 8];  
 
     while (1){   	
 		//random_eight = rand() % 8;
 	    //direction = dir[random_eight];
 	    //opening = middleOpening[random_eight];
 	    //colour_wall = wallColour[random_eight];  
-		clear_screen();
-		draw_background();
-		randomBars();
-		
-
+		//clear_screen();
+		//draw_background();
+		speed_adjust(500000);
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
 }
 
-void randomBars(){
-//void randomBars(int direction, int opening, int colour_wall){
-    //if(counter!=0){
-      //  for(int i = 0; i < 10; i++){
-        //    if(occupiedCol[i])clearVerticalWall(occupiedCol[i]);
-        //}
-        //for(int i = 0; i < 10; i++){
-          //  if(occupiedRow[i])clearHorizontalWall(occupiedRow[i]);
-        //}
-    //}
-    //counter++;  
+void speed_adjust(int startValue){
+    int count = startValue;
+    while(count > 0){
+        count--;
+    }
+    randomBars();
+}
 
+
+void randomBars(){
+//void randomBars(int direction, int opening, int colourWall){
+    if(counter!=0){
+        for(int i = 0; i < 10; i++){
+            if(occupiedCol[i] != 0xFFFF)clearVerticalWall(i);
+            if(occupiedRow[i] != 0xFFFF)clearHorizontalWall(i);
+        }
+    }
+    counter++;  
     if(direction == 0) { // From top
-        wallUpDown(topWall, opening, colour_wall);
+        wallUpDown(topWall, opening, colourWall);
         topWall += 1;
     } else if(direction == 1) { // From bottom
-        wallUpDown(bottomWall, opening, colour_wall);
+        wallUpDown(bottomWall, opening, colourWall);
         bottomWall -= 1;
     } else if(direction == 2) { // From left
-        wallLeftRight(topWall, opening, colour_wall);
+        wallLeftRight(topWall, opening, colourWall);
         topWall += 1;
     } else if(direction == 3) { // From right
-        wallLeftRight(bottomWall, opening, colour_wall);
+        wallLeftRight(bottomWall, opening, colourWall);
         bottomWall -= 1;
     }
     
@@ -109,12 +114,12 @@ void randomBars(){
         topWall = 0;
         direction = dir[rand() % 8];
         opening = middleOpening[rand() % 8];
-        colour_wall = wallColour[rand() % 8];
+        colourWall = wallColour[rand() % 8];
     } else if(bottomWall == -1) {
         bottomWall = 9;
         direction = dir[rand() % 8];
         opening = middleOpening[rand() % 8];
-        colour_wall = wallColour[rand() % 8];
+        colourWall = wallColour[rand() % 8];
     }
 }
 
@@ -174,7 +179,7 @@ void draw_background(){
 
 //col, row because uses x, y 
 void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
-    //occupiedCol[colToColour];
+    occupiedCol[colToColour] = wallColour;
     //opening is from middleOpening - 1 to middleOpening + 1
     for(int row = 0; row < 10; row ++){
         if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
@@ -184,7 +189,7 @@ void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
 }
 
 void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
-    //occupiedRow[rowToColour];
+    occupiedRow[rowToColour] = wallColour;
     //opening is from middleOpening - 1 to middleOpening + 1
     for(int col = 0; col < 10; col++){
         if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
@@ -194,12 +199,14 @@ void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
 }
 
 void clearVerticalWall(int col){
+    occupiedCol[col] = 0xFFFF;
     for(int i = 0; i < 10; i++){
         draw_grid(col, i, 0xFFFF);
     }
 }
 
 void clearHorizontalWall(int row){
+    occupiedRow[row] = 0xFFFF;
     for(int i = 0; i < 10; i++){
         draw_grid(i, row, 0xFFFF);
     }
