@@ -90,11 +90,11 @@ int main(void){
         if(!movePlayerSignal){
             keyValue = *key_ptr;
             if(key_value == 1) {
-                movePlayerRight();
+                movePlayerUp();
             } else if(key_value == 2) {
                 movePlayerDown();
             } else if(key_value == 4) {
-                movePlayerUp();
+		movePlayerRight();
             } else if(key_value == 8) {
                 movePlayerLeft();
             }
