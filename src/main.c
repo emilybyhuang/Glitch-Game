@@ -5,6 +5,8 @@
 short int grid[10][10];//each time it draws, make grid occupied by the colour value
 int sideLength = 24;
 volatile int pixel_buffer_start = 0xC8000000; // global variable
+volatile int *ledPtr = (int *)0xFF200000;
+
                       //red   yellow   green    cyan    blue   magenta
 short int colour[6] = {0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F};
 short int backgroundColour = 0x0000;
@@ -32,8 +34,8 @@ void clear_screen();
 void wait_for_vsync();
 void plot_pixel(int x, int y, short int line_color);
 void draw_grid(int a, int b, short int gridColour);
+void draw_player(int a, int b, short int gridColour, bool playerGrid);
 void draw_background();
-//void randomBars(int direction, int opening, int colour_wall);
 void randomBars();
 void speed_adjust(int startValue);
 void movePlayerDown();
@@ -43,7 +45,6 @@ void movePlayerRight();
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-    
     // declare other variables(not shown)
     // initialize location and direction of rectangles(not shown)
 
@@ -73,20 +74,19 @@ int main(void){
     colourWall = wallColour[rand() % 8];  
 
     while (1){   	
-		//random_eight = rand() % 8;
-	    //direction = dir[random_eight];
-	    //opening = middleOpening[random_eight];
-	    //colour_wall = wallColour[random_eight];  
+  
         speed_adjust(5000);
 	    volatile int *key_ptr = (int *)0xFF200050;
     	int key_value = *key_ptr;
-		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
-		
+
         if(movePlayerSignal == true && key_value == 0){
-            draw_grid(prevPlayerX, prevPlayerY, white);
-            draw_grid(playerX, playerY, playerColour);
+            draw_player(prevPlayerX, prevPlayerY, white, false);
+            draw_player(playerX, playerY, playerColour, true);
             movePlayerSignal = false;
-        }else draw_grid(playerX, playerY, playerColour);
+        } else {
+			draw_player(playerX, playerY, playerColour, false);
+		}
+        
         if(!movePlayerSignal){
             keyValue = *key_ptr;
             if(key_value == 1) {
@@ -105,38 +105,75 @@ int main(void){
     }
 }
 
+void draw_player(int a, int b, short int gridColour, bool playerGrid){
+
+    if(grid[a][b] != white && grid[a][b] != gridColour){
+        //if player going to overwrite and player colour != colour of wall
+        if(playerGrid && gridColour != grid[a][b]){
+            *ledPtr = 1;
+        //if wall: can go over other walls
+        }else if(!playerGrid){
+            if(a != playerX  && b != playerY) {
+				*ledPtr = 0;
+            }else {
+				* ledPtr = 1;
+			}
+        }
+    } else {
+		*ledPtr = 0;
+	}
+
+    //i, j is which index of grid to draw
+    int xMin = a*sideLength;
+    int yMin = b*sideLength;
+    int xMax = ((a+1)*sideLength)-1;
+    int yMax = ((b+1)*sideLength)-1;
+    int x, y;
+    
+	for(x = xMin; x < xMax; x++){
+    	for(y = yMin; y < yMax; y++){
+            if(x % 24 == 0 || x % 24 == 23 || y % 24 == 0 || y % 24 == 23){
+                //draw black
+                plot_pixel(x, y, 0x0000);
+            }else{
+                //draw white
+                plot_pixel(x,y,gridColour);
+            }
+        }
+    }
+}
 
 
 void movePlayerDown(){
-        prevPlayerX = playerX;
-        prevPlayerY = playerY;
-        movePlayerSignal = true;
-        playerY += 1;
-        if(playerY == 10) playerY = 9;
+    prevPlayerX = playerX;
+    prevPlayerY = playerY;
+    movePlayerSignal = true;
+    playerY += 1;
+    if(playerY == 10) playerY = 9;
 }
 
 void movePlayerUp(){
-        prevPlayerX = playerX;
-        prevPlayerY = playerY;
-        movePlayerSignal = true;
-        playerY -= 1;
-        if(playerY == -1) playerY = 0;
+    prevPlayerX = playerX;
+    prevPlayerY = playerY;
+    movePlayerSignal = true;
+    playerY -= 1;
+    if(playerY == -1) playerY = 0;
 }
 
 void movePlayerRight(){
-        prevPlayerX = playerX;
-        prevPlayerY = playerY;
-        movePlayerSignal = true;
-        playerX += 1;
-        if(playerX == 10) playerX = 9;
+    prevPlayerX = playerX;
+    prevPlayerY = playerY;
+    movePlayerSignal = true;
+    playerX += 1;
+    if(playerX == 10) playerX = 9;
 }
 
 void movePlayerLeft(){
-        prevPlayerX = playerX;
-        prevPlayerY = playerY;
-        movePlayerSignal = true;
-        playerX -= 1;
-        if(playerX == -1) playerX = 0;
+    prevPlayerX = playerX;
+    prevPlayerY = playerY;
+    movePlayerSignal = true;
+    playerX -= 1;
+    if(playerX == -1) playerX = 0;
 }
 
 void speed_adjust(int startValue){
@@ -149,7 +186,6 @@ void speed_adjust(int startValue){
 
 
 void randomBars(){
-//void randomBars(int direction, int opening, int colourWall){
     if(counter!=0){
         for(int i = 0; i < 10; i++){
             if(occupiedCol[i] != 0xFFFF)clearVerticalWall(i);
@@ -208,7 +244,9 @@ void plot_pixel(int x, int y, short int line_color)
 }
 
 void draw_grid(int a, int b, short int gridColour){
-    grid[a][b] = gridColour;
+    
+	grid[a][b] = gridColour;
+
     //i, j is which index of grid to draw
     int xMin = a*sideLength;
     int yMin = b*sideLength;
@@ -271,4 +309,3 @@ void clearHorizontalWall(int row){
         draw_grid(i, row, white);
     }
 }
-
