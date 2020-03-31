@@ -104,11 +104,10 @@ int main(void){
             }
         }
 		
-		if(counter != 0){
+		if(!counter){
 			if(occupiedCol != -1)clearVerticalWall(occupiedCol);
 			if(occupiedRow != -1)clearHorizontalWall(occupiedRow);
 		}
-		
 		counter++;	
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
@@ -116,6 +115,7 @@ int main(void){
 }
 
 void draw_player(int a, int b, short int gridColour, bool playerGrid){
+
     if(grid[a][b] != white && grid[a][b] != gridColour){
         //if player going to overwrite and player colour != colour of wall
         if(playerGrid && gridColour != grid[a][b]){
@@ -247,6 +247,7 @@ void plot_pixel(int x, int y, short int line_color)
 }
 
 void draw_grid(int a, int b, short int gridColour){
+    
 	grid[a][b] = gridColour;
 	
     //i, j is which index of grid to draw
