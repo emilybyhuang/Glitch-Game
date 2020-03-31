@@ -15,13 +15,10 @@ int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 short int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
-int direction = 0;
-int opening = 0;
+int direction = 0, opening = 0;
 bool movePlayerSignal = false; // =true if to move
-int prevPlayerX, prevPlayerY;
-int keyValue;
-int occupiedCol, occupiedRow;
-int prevOccupiedCol, prevOccupiedRow;
+int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCol, prevOccupiedRow;
+int prevPrevPlayerX, prevPrevPlayerY;
 
 short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
 // short int occupiedCol[10] = {0xFFFF};
@@ -95,6 +92,9 @@ int main(void){
 		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
         if(movePlayerSignal == true && key_value == 0){
             draw_player(prevPlayerX, prevPlayerY, white, false);
+            // draw_player(prevPrevPlayerY, prevPrevPlayerX, white, false);
+            // prevPrevPlayerX = prevPlayerX;
+            // prevPrevPlayerY = prevPlayerY;
             draw_player(playerX, playerY, playerColour, true);
             movePlayerSignal = false;
         }else draw_player(playerX, playerY, playerColour, true);
@@ -104,11 +104,11 @@ int main(void){
             if(key_value == 1) {
                 movePlayerRight();
             } else if(key_value == 2) {
-                movePlayerDown();
-            } else if(key_value == 4) {
-                movePlayerUp();
-            } else if(key_value == 8) {
                 movePlayerLeft();
+            } else if(key_value == 4) {
+                movePlayerDown();
+            } else if(key_value == 8) {
+                movePlayerUp();
             }
         }
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
@@ -117,7 +117,6 @@ int main(void){
 }
 
 void draw_player(int a, int b, short int gridColour, bool playerGrid){
-
     if(grid[a][b] != white && grid[a][b] != gridColour){
         //if player going to overwrite and player colour != colour of wall
         if(playerGrid && gridColour != grid[a][b]){
@@ -249,7 +248,6 @@ void plot_pixel(int x, int y, short int line_color)
 }
 
 void draw_grid(int a, int b, short int gridColour){
-    
 	grid[a][b] = gridColour;
 	
     //i, j is which index of grid to draw
