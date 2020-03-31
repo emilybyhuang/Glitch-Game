@@ -16,7 +16,7 @@ int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int dir[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 short int wallColour[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int direction = 0, opening = 0;
-bool movePlayerSignal = false; // =true if to move
+bool movePlayerSignal = false, clearPlayerOnce = false; // =true if to move
 int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCol, prevOccupiedRow;
 int prevPrevPlayerX, prevPrevPlayerY;
 
@@ -90,13 +90,16 @@ int main(void){
 	    volatile int *key_ptr = (int *)0xFF200050;
     	int key_value = *key_ptr;
 		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
-        if(movePlayerSignal == true && key_value == 0){
-            draw_player(prevPlayerX, prevPlayerY, white, false);
-            // draw_player(prevPrevPlayerY, prevPrevPlayerX, white, false);
-            // prevPrevPlayerX = prevPlayerX;
-            // prevPrevPlayerY = prevPlayerY;
+        if(movePlayerSignal == true){
+            if(!clearPlayerOnce){
+                draw_player(prevPlayerX, prevPlayerY, white, false);
+                clearPlayerOnce = true;
+            }else{
+                draw_player(prevPlayerX, prevPlayerY, white, false);
+                clearPlayerOnce = false;
+                movePlayerSignal = false;
+            }
             draw_player(playerX, playerY, playerColour, true);
-            movePlayerSignal = false;
         }else draw_player(playerX, playerY, playerColour, true);
       
         if(!movePlayerSignal){
