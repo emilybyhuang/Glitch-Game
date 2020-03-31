@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+//setting up different timers for the user moves on the shorter timers
+
 short int grid[10][10];//each time it draws, make grid occupied by the colour value
 int sideLength = 24;
 volatile int pixel_buffer_start = 0xC8000000; // global variable
 volatile int *ledPtr = (int *)0xFF200000;
-
                       //red   yellow   green    cyan    blue   magenta
 short int colour[6] = {0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F};
 short int backgroundColour = 0x0000;
@@ -20,6 +21,7 @@ bool movePlayerSignal = false; // =true if to move
 int prevPlayerX, prevPlayerY;
 int keyValue;
 int occupiedCol, occupiedRow;
+int prevOccupiedCol, prevOccupiedRow;
 
 short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
 // short int occupiedCol[10] = {0xFFFF};
@@ -77,10 +79,16 @@ int main(void){
     colourWall = wallColour[rand() % 8];  
 
     while (1){   
-		//random_eight = rand() % 8;
-	    //direction = dir[random_eight];
-	    //opening = middleOpening[random_eight];
-	    //colour_wall = wallColour[random_eight];  
+        if(counter!=0){
+            printf("prevOccupiedCol: %d\n", prevOccupiedCol);
+            printf("prevOccupiedRow: %d\n", prevOccupiedRow);
+            if(prevOccupiedCol != -1)clearVerticalWall(prevOccupiedCol);
+            if(prevOccupiedRow != -1)clearHorizontalWall(prevOccupiedRow);
+			prevOccupiedCol = occupiedCol;
+			prevOccupiedRow = occupiedRow;   
+		}
+		counter++;
+          
         speed_adjust(500000);   
 	    volatile int *key_ptr = (int *)0xFF200050;
     	int key_value = *key_ptr;
@@ -103,12 +111,6 @@ int main(void){
                 movePlayerLeft();
             }
         }
-		
-		if(!counter){
-			if(occupiedCol != -1)clearVerticalWall(occupiedCol);
-			if(occupiedRow != -1)clearHorizontalWall(occupiedRow);
-		}
-		counter++;	
 		wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 	}
@@ -280,6 +282,7 @@ void draw_background(){
 
 //col, row because uses x, y 
 void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
+    printf("drawCol: %d\n", colToColour);
     occupiedCol = colToColour;
     //opening is from middleOpening - 1 to middleOpening + 1
     for(int row = 0; row < 10; row ++){
@@ -290,6 +293,7 @@ void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
 }
 
 void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
+    printf("drawRow: %d\n", rowToColour);
     occupiedRow = rowToColour;
     //opening is from middleOpening - 1 to middleOpening + 1
     for(int col = 0; col < 10; col++){
@@ -300,14 +304,12 @@ void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
 }
 
 void clearVerticalWall(int col){
-    occupiedCol = -1;
     for(int i = 0; i < 10; i++){
         draw_grid(col, i, white);
     }
 }
 
 void clearHorizontalWall(int row){
-    occupiedRow = -1;
     for(int i = 0; i < 10; i++){
         draw_grid(i, row, white);
     }
