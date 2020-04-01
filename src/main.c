@@ -86,7 +86,7 @@ int main(void){
 		}
 		counter++;
           
-        speed_adjust(500000);   
+        speed_adjust(400000);   
 	    volatile int *key_ptr = (int *)0xFF200050;
     	int key_value = *key_ptr;
 		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
@@ -124,12 +124,14 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
         //if player going to overwrite and player colour != colour of wall
         if(playerGrid && gridColour != grid[a][b]){
             *ledPtr = 1;
+            endGame();
         //if wall: can go over other walls
         }else if(!playerGrid){
             if(a != playerX  && b != playerY) {
 				*ledPtr = 0;
             }else {
 				* ledPtr = 1;
+                endGame();
 			}
         }
     } else {
