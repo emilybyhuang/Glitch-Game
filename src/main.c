@@ -1,3 +1,4 @@
+  
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,6 +8,8 @@ short int grid[10][10];//each time it draws, make grid occupied by the colour va
 int sideLength = 24;
 volatile int pixel_buffer_start = 0xC8000000; // global variable
 volatile int *ledPtr = (int *)0xFF200000;
+volatile int *hex_ptr = (int *)0xFF200020;
+char seg7[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
                       //red   yellow   green    cyan    blue   magenta
 short int colour[6] = {0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F};
 short int backgroundColour = 0x0000;
@@ -24,7 +27,10 @@ short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
 // short int occupiedCol[10] = {0xFFFF};
 // short int occupiedRow[10] = {0xFFFF};
 int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue;
-//int random_eight = 0;
+int speed = 0;
+int score = 0;
+int speed_factor = 2;
+bool first_time = false;
 
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
@@ -78,7 +84,9 @@ int main(void){
     direction = dir[rand() % 8];
     opening = middleOpening[rand() % 8];
     colourWall = wallColour[rand() % 8];  
-    
+    speed = 2000000;
+	*hex_ptr = seg7[0] | seg7[0] << 8;
+	
         while (!dead){   
             if(counter!=0){
                 if(prevOccupiedCol != -1)clearVerticalWall(prevOccupiedCol);
@@ -88,38 +96,49 @@ int main(void){
             }
             counter=1;
             
-            speed_adjust(400000);   
+			if(score != 0) {
+				if(score % 6 == 0 && first_time) {
+					speed = speed / speed_factor;
+					first_time = false;
+				} else if(score % 6 != 0) {
+					first_time = true;
+				}
+			} else {
+				first_time = true;
+			}
+		
+            speed_adjust(speed);   
             volatile int *key_ptr = (int *)0xFF200050;
             int key_value = *key_ptr;
             // value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
             //if(!dead){
-                if(movePlayerSignal == true){
-                    if(!clearPlayerOnce){
-                        draw_player(prevPlayerX, prevPlayerY, white, false);
-                        clearPlayerOnce = true;
-                    }else{
-                        draw_player(prevPlayerX, prevPlayerY, white, false);
-                        clearPlayerOnce = false;
-                        movePlayerSignal = false;
-                    }
-                    draw_player(playerX, playerY, playerColour, true);
-                }else draw_player(playerX, playerY, playerColour, true);
-            
-                if(!movePlayerSignal){
-                    keyValue = *key_ptr;
-                    if(key_value == 1) {
-                        movePlayerRight();
-                    } else if(key_value == 2) {
-                        movePlayerLeft();
-                    } else if(key_value == 4) {
-                        movePlayerDown();
-                    } else if(key_value == 8) {
-                        movePlayerUp();
-                    }
-                }
-            
-                wait_for_vsync(); // swap front and back buffers on VGA vertical sync
-                pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
+			if(movePlayerSignal == true){
+				if(!clearPlayerOnce){
+					draw_player(prevPlayerX, prevPlayerY, white, false);
+					clearPlayerOnce = true;
+				}else{
+					draw_player(prevPlayerX, prevPlayerY, white, false);
+					clearPlayerOnce = false;
+					movePlayerSignal = false;
+				}
+				draw_player(playerX, playerY, playerColour, true);
+			}else draw_player(playerX, playerY, playerColour, true);
+		
+			if(!movePlayerSignal){
+				keyValue = *key_ptr;
+				if(key_value == 1) {
+					movePlayerRight();
+				} else if(key_value == 2) {
+					movePlayerLeft();
+				} else if(key_value == 4) {
+					movePlayerDown();
+				} else if(key_value == 8) {
+					movePlayerUp();
+				}
+			}
+		
+			wait_for_vsync(); // swap front and back buffers on VGA vertical sync
+			pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
             //}
         }
         //Display died on hex
@@ -140,6 +159,11 @@ int main(void){
                 playerY = 4;
                 counter = 0;
                 *HEX3_HEX0_ptr = 0;
+				score = 0;
+				topWall = 0;
+				bottomWall = 9;
+				occupiedCol = 0;
+				occupiedRow = 0;
                 break;
             }
         }
@@ -165,6 +189,16 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
     } else {
 		*ledPtr = 0;
 	}
+	
+	//printf("led light: %d, a: %d, b: %d, occupiedCol: %d, occupiedRow: %d\n", *ledPtr, a, b, occupiedCol, occupiedRow);
+	if(*ledPtr != 1 && (a == occupiedCol || b == occupiedRow) && playerGrid == true) {
+		score++;
+		printf("the score is: %d\n", score);
+		int single_digit = score % 10;
+		int tenth_digit = score / 10;
+		*hex_ptr = seg7[single_digit] | seg7[tenth_digit] << 8;
+	}
+	
     if(!dead){
     //i, j is which index of grid to draw
         int xMin = a*sideLength;
