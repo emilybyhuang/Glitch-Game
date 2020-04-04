@@ -5,6 +5,7 @@
 //setting up different timers for the user moves on the shorter timers
 
 short int grid[10][10];//each time it draws, make grid occupied by the colour value
+short int special_grid[10][10];
 int sideLength = 24;
 volatile int pixel_buffer_start = 0xC8000000; // global variable
 volatile int *ledPtr = (int *)0xFF200000;
@@ -22,14 +23,16 @@ bool movePlayerSignal = false, clearPlayerOnce = false; // =true if to move
 int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCol, prevOccupiedRow;
 int prevPrevPlayerX, prevPrevPlayerY;
 
-short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
-//short int occupiedC[10] = {0xFFFF};
-//short int occupiedR[10] = {0xFFFF};
+short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF, special_colour = 0;
 int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue;
 int score = 0;
 int speed_factor = 2;
 int speed = 0;
+int special_x = 0, special_y = 0;
 bool first_time = false;
+bool change_colour = false;
+bool draw_special = false;
+bool draw_grid_special = false;
 
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
@@ -48,6 +51,7 @@ void movePlayerDown();
 void movePlayerUp();
 void movePlayerLeft();
 void movePlayerRight();
+void draw_special_grid(int a, int b, short int special_grid_colour);
 
 int main(void){
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
@@ -69,6 +73,7 @@ int main(void){
     pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 	clear_screen();
 	draw_background();
+	
     for(int i = 0; i < 8; i++){
         middleOpening[i] = rand()%8+1;
         wallColour[i] = colour[rand()%6];
@@ -78,7 +83,7 @@ int main(void){
     //for 1 wall at a time
     direction = dir[rand() % 8];
     opening = middleOpening[rand() % 8];
-    colourWall = wallColour[rand() % 8];  
+    colourWall = wallColour[rand() % 8]; 
 	speed = 2000000;
 	*hex_ptr = seg7[0] | seg7[0] << 8;
 	
@@ -90,23 +95,56 @@ int main(void){
 			prevOccupiedRow = occupiedRow;   
 		}
 		counter++;
-        
+
 		if(score != 0) {
-			if(score % 2 == 0 && first_time) {
+			if(score % 6 == 0 && first_time) {
 				speed = speed / speed_factor;
 				first_time = false;
-			} else if(score % 2 != 0) {
+			} else if(score % 6 != 0) {
 				first_time = true;
 			}
 		} else {
 			first_time = true;
 		}
-	
-        speed_adjust(speed);   
+		
+		if(score != 0) {
+			if(score % 6 == 0 && change_colour) {
+				playerColour = colour[rand() % 6];
+				change_colour = false;
+			} else if(score % 6 != 0) {
+				change_colour = true;
+			}
+		} else {
+			change_colour = true;
+		}
+
+		if(score != 0) {
+			if(score % 3 == 0 && draw_special) {
+				special_colour = colour[rand() % 6];
+				special_x = rand() % 10;
+				special_y = rand() % 10;
+				draw_special = false;
+				draw_grid_special = true;
+			} else if(score % 3 != 0) {
+				draw_special = true;
+				draw_grid_special = false;
+			}
+		} else {
+			draw_special = true;
+		}
+		
+		printf("draw grid special: %d\n", draw_grid_special);
+		if(draw_grid_special) {
+			draw_special_grid(special_x, special_y, special_colour);
+		} else {
+			draw_grid(special_x, special_y, white);
+		}
+		
+        speed_adjust(speed);  		
 	    volatile int *key_ptr = (int *)0xFF200050;
     	int key_value = *key_ptr;
 		// value == 1 is right; value == 2 is down; value == 3 is up; value == 4 is left;
-        if(movePlayerSignal == true && key_value == 0){
+        if(movePlayerSignal == true){
             if(!clearPlayerOnce){
                 draw_player(prevPlayerX, prevPlayerY, white, false);
                 clearPlayerOnce = true;
@@ -159,6 +197,13 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
 		int single_digit = score % 10;
 		int tenth_digit = score / 10;
 		*hex_ptr = seg7[single_digit] | seg7[tenth_digit] << 8;
+	}
+	
+	// Player on special grid
+	if(a == special_x && b == special_y) {
+		gridColour = special_grid[a][b];
+		draw_grid_special = false;
+		playerColour = gridColour;	
 	}
 
     //i, j is which index of grid to draw
@@ -291,12 +336,35 @@ void draw_grid(int a, int b, short int gridColour){
                 //draw black
                 plot_pixel(x, y, backgroundColour);
             }else{
-                //draw white
+                //draw colour
                 plot_pixel(x,y,gridColour);
             }
         }
     }
 }
+
+void draw_special_grid(int a, int b, short int special_grid_colour) {
+	
+	special_grid[a][b] = special_grid_colour;
+	int xMin = a*sideLength;
+    int yMin = b*sideLength;
+    int xMax = ((a+1)*sideLength)-1;
+    int yMax = ((b+1)*sideLength)-1;
+    int x, y;
+	
+	for(x = xMin; x < xMax; x++) {
+		for(y = yMin; y < yMax; y++) {
+			if(x % 24 == 0 || x % 24 == 23 || y % 24 == 0 || y % 24 == 23) {
+				plot_pixel(x, y, backgroundColour);
+			} else if((x >= xMin + 9 && x <= xMin + 14)|| (y >= yMin + 9 && y <= yMin + 14)) {
+				plot_pixel(x, y, backgroundColour);
+			} else {
+				plot_pixel(x, y, special_grid_colour);
+			}
+		}
+	}
+}
+	
 
 void draw_background(){
     for(int i = 0; i < 10; i++){
