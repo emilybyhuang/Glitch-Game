@@ -86,7 +86,7 @@ int main(void){
                 prevOccupiedCol = occupiedCol;
                 prevOccupiedRow = occupiedRow;   
             }
-            counter++;
+            counter=1;
             
             speed_adjust(400000);   
             volatile int *key_ptr = (int *)0xFF200050;
@@ -136,9 +136,14 @@ int main(void){
             else if(keyValue == 0 && potentialRestart == true){
                 printf("restart\n");
                 dead = false;
+                playerX = 4;
+                playerY = 4;
+                counter = 0;
+                *HEX3_HEX0_ptr = 0;
                 break;
             }
         }
+
     }  
 }
 
@@ -337,16 +342,6 @@ void clearVerticalWall(int col){
 void clearHorizontalWall(int row){
     for(int i = 0; i < 10; i++){
         draw_grid(i, row, white);
-    }
-}
-
-void dead_ISR(void){
-    while(1){
-        volatile int * HEX3_HEX0_ptr = (int *) 0xFF200020;
-        int HEX_bits;
-        HEX_bits = 0X5E06795E;
-        *HEX3_HEX0_ptr = HEX_bits;
-        endGame();
     }
 }
 
@@ -613,5 +608,4 @@ unsigned int endGame_map[] = {
     }
     
     dead = true;
-    //dead_ISR();
 }
