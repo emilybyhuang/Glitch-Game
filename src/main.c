@@ -60,8 +60,6 @@ void movePlayerRight();
 void draw_image(unsigned int imageArr[]);
 void draw_special_grid(int a, int b, short int special_grid_colour);
 
-
-
 int main(void){
     bool potentialStart = false, doneStartScreen = false;
     draw_image(startScreen);
@@ -255,7 +253,16 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
                     //draw black
                     plot_pixel(x, y, backgroundColour);
                 }else{
-                    plot_pixel(x,y,gridColour);
+                    if(playerGrid)plot_pixel(x,y,gridColour);
+                    else{
+                        //for overwriting player: check if the player is on a "wall"
+                        //can only be on a wall if the player colour == wall colour
+                        if(grid[a][b] == playerColour && !clearPlayerOnce){
+                            continue;//don't overwrite
+                        }else{
+                            plot_pixel(x,y,gridColour);
+                        }
+                    }
                 }
             }
         }
@@ -356,7 +363,6 @@ void plot_pixel(int x, int y, short int line_color){
 
 void draw_grid(int a, int b, short int gridColour){
 	grid[a][b] = gridColour;
-	
     //i, j is which index of grid to draw
     int xMin = a*sideLength;
     int yMin = b*sideLength;
