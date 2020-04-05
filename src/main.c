@@ -11,8 +11,7 @@ volatile int pixel_buffer_start = 0xC8000000; // global variable
 volatile int *ledPtr = (int *)0xFF200000;
 volatile int *hex_ptr = (int *)0xFF200020;
 char seg7[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
-                      //red   yellow   green    cyan    blue   magenta
-short int colour[6] = {0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F};
+short int colour[10] = {0xAE92, 0xF63D, 0xCE3E, 0xF738, 0xF698, 0xC79C, 0xC6FE, 0x6BBA, 0x7098, 0xD34D};
 short int backgroundColour = 0x0000;
 int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
@@ -24,7 +23,7 @@ int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCo
 int prevPrevPlayerX, prevPrevPlayerY;
 bool dead = false; 
 
-short int colourWall = 0, playerColour = 0x07E0, white = 0xFFFF;
+short int colourWall = 0, playerColour = 0xAE92, white = 0xFFFF;
 // short int occupiedCol[10] = {0xFFFF};
 // short int occupiedRow[10] = {0xFFFF};
 int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue;
@@ -84,7 +83,7 @@ int main(void){
 		draw_background();
 		for(int i = 0; i < 8; i++){
 			middleOpening[i] = rand()%8+1;
-			wallColour[i] = colour[rand()%6];
+			wallColour[i] = colour[rand()%10];
 			dir[i] = rand()%4;
 		}
 
@@ -117,7 +116,7 @@ int main(void){
 			
 			if(score != 0) {
 				if(score % 6 == 0 && change_colour) {
-					playerColour = colour[rand() % 6];
+					playerColour = colour[rand() % 10];
 					change_colour = false;
 				} else if(score % 6 != 0) {
 					change_colour = true;
@@ -128,7 +127,7 @@ int main(void){
 			
 			if(score != 0) {
 				if(score % 3 == 0 && draw_special) {
-					special_colour = colour[rand() % 6];
+					special_colour = colour[rand() % 10];
 					special_x = rand() % 10;
 					special_y = rand() % 10;
 					draw_special = false;
