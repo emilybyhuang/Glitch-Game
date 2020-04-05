@@ -63,22 +63,17 @@ void draw_special_grid(int a, int b, short int special_grid_colour);
 
 
 int main(void){
-    while(1){
-        bool potentialStart = false, doneStartScreen = false;
-        draw_image(startScreen);
-        while(!doneStartScreen){
-            int keyValue = *keyPtr;
-            if(keyValue == 2)potentialStart = true;
-            else if(keyValue == 0 && potentialStart == true){
-                doneStartScreen = true;
-            }
+    bool potentialStart = false, doneStartScreen = false;
+    draw_image(startScreen);
+    while(!doneStartScreen){
+        int keyValue = *keyPtr;
+        if(keyValue == 2)potentialStart = true;
+        else if(keyValue == 0 && potentialStart == true){
+            doneStartScreen = true;
         }
-        
+    }
+    while(1){
 		volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-
-		// declare other variables(not shown)
-		// initialize location and direction of rectangles(not shown)
-
 		/* set front pixel buffer to start of FPGA On-chip memory */
 		*(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the 
 											// back buffer
@@ -93,8 +88,6 @@ int main(void){
 		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 		clear_screen();
 		draw_background();
-        
-
 
 		for(int i = 0; i < 8; i++){
 			middleOpening[i] = rand()%8+1;
