@@ -1,44 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//setting up different timers for the user moves on the shorter timers
 
-short int grid[10][10];//each time it draws, make grid occupied by the colour value
-short int special_grid[10][10];
-int sideLength = 24;
-volatile int pixel_buffer_start = 0xC8000000; // global variable
+//I/O's
 volatile int *ledPtr = (int *)0xFF200000;
 volatile int *hexPtr = (int *)0xFF200020;
 volatile int *keyPtr = (int *)0xFF200050;
+volatile int pixel_buffer_start = 0xC8000000;
+
+//grid arrays to keep track of where things are
+short int grid[10][10];//each time it draws, make grid occupied by the colour value
+short int special_grid[10][10];
+
+//start and end image arrays
+unsigned int startScreen[]; 
+unsigned int endGame_map[];
+
+//colours and seg 7
 char seg7[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
 short int colour[10] = {0xAE92, 0xF63D, 0xCE3E, 0xF738, 0xF698, 0xC79C, 0xC6FE, 0x6BBA, 0x7098, 0xD34D};
 short int backgroundColour = 0x0000;
+
+//wall and player vars
 int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };//-1 if not taken
 int middleOpening[8] = {-1};
 int dir[8] = {-1};
 short int wallColour[8] = {-1};
-int direction = 0, opening = 0;
+short int colourWall = 0, playerColour = 0xAE92, white = 0xFFFF,special_colour = 0;
+int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCol, prevOccupiedRow, prevPrevPlayerX, prevPrevPlayerY, direction = 0, opening = 0, sideLength = 24;
+int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue, speed = 0, score = 0, speed_factor = 2,special_x = 0, special_y = 0;
 bool movePlayerSignal = false, clearPlayerOnce = false; // =true if to move
-int prevPlayerX, prevPlayerY, keyValue, occupiedCol, occupiedRow, prevOccupiedCol, prevOccupiedRow;
-int prevPrevPlayerX, prevPrevPlayerY;
-bool dead = false;
-unsigned int startScreen[]; 
-unsigned int endGame_map[];
-
-short int colourWall = 0, playerColour = 0xAE92, white = 0xFFFF;
-// short int occupiedCol[10] = {0xFFFF};
-// short int occupiedRow[10] = {0xFFFF};
-int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, currentKeyValue;
-int speed = 0;
-int score = 0;
-int speed_factor = 2;
-short int special_colour = 0;
-int special_x = 0;
-int special_y = 0;
-bool first_time = false;
-bool change_colour = false;
-bool draw_special = false;
-bool draw_grid_special = false;
+bool first_time = false, change_colour = false, draw_special = false, draw_grid_special = false,dead = false;
 
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
@@ -50,7 +42,6 @@ void plot_pixel(int x, int y, short int line_color);
 void draw_grid(int a, int b, short int gridColour);
 void draw_player(int a, int b, short int gridColour, bool playerGrid);
 void draw_background();
-//void randomBars(int direction, int opening, int colour_wall);
 void randomBars();
 void speed_adjust(int startValue);
 void movePlayerDown();
@@ -108,7 +99,6 @@ int main(void){
 				prevOccupiedRow = occupiedRow;   
 			}
 			counter=1;
-			
 			if(score != 0) {
 				if(score % 6 == 0 && first_time) {
 					speed = speed / speed_factor;
@@ -254,11 +244,12 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
                     plot_pixel(x, y, backgroundColour);
                 }else{
                     if(playerGrid)plot_pixel(x,y,gridColour);
+                    //clearing
                     else{
                         //for overwriting player: check if the player is on a "wall"
                         //can only be on a wall if the player colour == wall colour
-                        if(grid[a][b] == playerColour && !clearPlayerOnce){
-                            continue;//don't overwrite
+                        if(grid[a][b] != gridColour && grid[a][b] != white && !clearPlayerOnce){
+                            //don't overwrite
                         }else{
                             plot_pixel(x,y,gridColour);
                         }
