@@ -25,7 +25,6 @@ short int backgroundColour = 0x0000;
 short int white = 0xFFFF;
 
 // Wall and player variables
-int wall[8] = {0, 0, 9, 9, 0 ,0 ,9 ,9 };
 int middleOpening[8] = {-1};
 int dir[8] = {-1};
 short int wallColour[8] = {-1};
@@ -170,6 +169,7 @@ int main(void){
         HEX_bits = 0X00003E00;
         *HEX5_HEX3_ptr = HEX_bits;
 		printf("Your total score is: %d\n", score);
+        //for poll I/O on keys
 		bool potentialRestart = false;
 		
 		// Reset everything when user dies
@@ -220,6 +220,7 @@ void change_player_colour() {
 		change_colour = true;
 	}
 }
+
 void draw_special_grid_in_while() {
 	if(score != 0) {
 		if(score % 3 == 0 && draw_special) {
@@ -326,6 +327,7 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
 		playerColour = gridColour;	
 	}
 	
+    //only draw player if not dead
     if(!dead){
         int xMin = a*sideLength;
         int yMin = b*sideLength;
@@ -529,6 +531,7 @@ void draw_special_grid(int a, int b, short int special_grid_colour) {
 	}
 }
 
+//for initial white grid background
 void draw_background(){
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
@@ -537,10 +540,9 @@ void draw_background(){
     }
 }
 
-// Col, row because uses x, y 
+// Vertical wall
 void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
     occupiedCol = colToColour;
-	
     // Opening is from middleOpening - 1 to middleOpening + 1
     for(int row = 0; row < 10; row ++){
         if(row!=middleOpening && row!=middleOpening+1 && row!=middleOpening-1){
@@ -549,9 +551,9 @@ void wallLeftRight(int colToColour, int middleOpening, short int wallColour){
     }
 }
 
+//Horizontal wall
 void wallUpDown(int rowToColour, int middleOpening, short int wallColour){
     occupiedRow = rowToColour;
-    
 	// Opening is from middleOpening - 1 to middleOpening + 1
     for(int col = 0; col < 10; col++){
         if(col!=middleOpening && col!=middleOpening+1 && col!=middleOpening-1){
@@ -572,6 +574,7 @@ void clearHorizontalWall(int row){
     }
 }
 
+//for using image arrays
 void draw_image(unsigned int imageArr[]) {
     clear_screen();
     int i = 0, j = 0;
