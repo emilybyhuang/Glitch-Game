@@ -35,12 +35,13 @@ int direction = 0, opening = 0, sideLength = 24;
 int topWall = 0, bottomWall = 9, counter = 0, playerX = 4, playerY = 4, keyValue, currentKeyValue, special_x = 0, special_y = 0;
 int countOnce = 0, speed = 0, score = 0, speed_factor = 2;
 
+// Signals
 bool movePlayerSignal = false, clearPlayerOnce = false;
 bool first_time = false, change_colour = false, draw_special = false, draw_grid_special = false,dead = false;
 bool addScore = false, clearCurrentPlayer = false, once = false, enteredDrawPlayer = false;
 bool finishedWall = false, onlyOnce = false, gameOverNext = false;
 
-
+// Functions
 void clearVerticalWall(int col);
 void clearHorizontalWall(int row);
 void wallLeftRight(int colToColour,int middleOpening, short int wallColour);
@@ -79,7 +80,6 @@ int main(void){
 	
 	// Game in progress 
     while(1){
-		
 		volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
 		
 		// Set front pixel buffer to start of FPGA On-chip memory 
