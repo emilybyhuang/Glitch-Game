@@ -121,7 +121,7 @@ int main(void){
 		colourWall = wallColour[rand() % 8]; 
 
 		// Initialize speed
-		speed = 2000000;
+		speed = 1800000;
 		
 		// Initialize HEX display
 		*hexPtr = seg7[0] | seg7[0] << 8;
@@ -166,6 +166,9 @@ int main(void){
 		int HEX_bits;
 		HEX_bits = 0X5E06795E;
 		*HEX3_HEX0_ptr = HEX_bits;
+        volatile int * HEX5_HEX3_ptr = (int *) 0xFF200030;
+        HEX_bits = 0X00003E00;
+        *HEX5_HEX3_ptr = HEX_bits;
 		printf("Your total score is: %d\n", score);
 		bool potentialRestart = false;
 		
@@ -180,6 +183,7 @@ int main(void){
 				playerY = 4;
 				counter = 0;
 				*HEX3_HEX0_ptr = 0;
+                *HEX5_HEX3_ptr = 0;
 				score = 0;
 				topWall = 0;
 				bottomWall = 9;
@@ -247,7 +251,7 @@ void draw_special_grid_in_while() {
 void add_score() {
 	if(addScore) {
 		score++;
-		printf("the score is: %d\n", score);
+		printf("Your current score: %d\n", score);
 		int single_digit = score % 10;
 		int tenth_digit = score / 10;
 		*hexPtr = seg7[single_digit] | seg7[tenth_digit] << 8;
@@ -396,6 +400,8 @@ void draw_player(int a, int b, short int gridColour, bool playerGrid){
 	}
 }
 
+//for checking if the player and walls are going towards each other: make sure they 
+//overlap on the screen fist before the game terminates
 bool towardsEachOther(int playerA, int playerB){
     switch(direction){
         case 0: // Wall from top
@@ -418,7 +424,6 @@ void speed_adjust(int startValue){
 }
 
 void randomBars(){
-
     if(direction == 0) { // From top
 		finishedWall = false;
         wallUpDown(topWall, opening, colourWall);

@@ -238,13 +238,13 @@ int main(void){
 }
 
 void draw_player(int a, int b, short int gridColour, bool playerGrid){
-	
-	
 	// Player on special grid
 	if(a == special_x && b == special_y) {
 		gridColour = special_grid[a][b];
 		draw_grid_special = false;
 		playerColour = gridColour;	
+        special_colour = white;
+        draw_grid(a,b,white);
 	}
 	
     if(!dead){
